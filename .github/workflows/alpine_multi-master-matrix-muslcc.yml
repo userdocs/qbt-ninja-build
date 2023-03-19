@@ -25,6 +25,18 @@ jobs:
             aarch64-linux-musl,
             x86_64-linux-musl,
           ]
+        include:
+          - arch: arm-linux-musleabihf
+            binary_name: armhf
+            
+          - arch: armv7l-linux-musleabihf
+            binary_name: armv7
+            
+          - arch: aarch64-linux-musl
+            binary_name: aarch64
+            
+          - arch: x86_64-linux-musl
+            binary_name: x86_64
 
     name: ${{ matrix.arch }}
 
@@ -79,13 +91,13 @@ jobs:
         run: docker exec -w /root/${{ matrix.name }} multiarch cmake --install build
 
       - name: Rename ${{ matrix.name }} to ${{ env.release_asset }}
-        run: docker exec multiarch mv -f /root/bin/${{ matrix.name }} /root/bin/${{ env.release_asset }}
+        run: docker exec multiarch mv -f /root/bin/${{ matrix.name }} /root/bin/ninja-${{ matrix.binary_name }}
 
       - name: "Create release"
         uses: ncipollo/release-action@v1
         with:
           prerelease: false
-          artifacts: bin/${{ env.release_asset }}
+          artifacts: bin/ninja-${{ matrix.binary_name }}
           replacesArtifacts: true
           tag: ${{ env.ninja_github_tag }}
           name: ${{ matrix.name }} ${{ env.ninja_github_tag }}
