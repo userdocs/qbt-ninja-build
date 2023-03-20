@@ -99,7 +99,7 @@ jobs:
           prerelease: false
           artifacts: bin/ninja-${{ matrix.binary_name }}
           replacesArtifacts: true
-          tag: ${{ env.ninja_github_tag }}
+          tag: v${{ env.ninja_github_tag }}
           name: ${{ matrix.name }} ${{ env.ninja_github_tag }}
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
