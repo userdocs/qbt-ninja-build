@@ -24,6 +24,7 @@ jobs:
             armv7l-linux-musleabihf,
             aarch64-linux-musl,
             x86_64-linux-musl,
+            x86_64-linux-muslx32,
           ]
         include:
           - arch: arm-linux-musleabihf
