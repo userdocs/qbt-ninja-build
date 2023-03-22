@@ -39,6 +39,9 @@ jobs:
           - arch: x86_64-linux-musl
             binary_name: x86_64
 
+          - arch: x86_64-linux-muslx32
+            binary_name: x86
+
     name: ${{ matrix.arch }}
 
     steps:
