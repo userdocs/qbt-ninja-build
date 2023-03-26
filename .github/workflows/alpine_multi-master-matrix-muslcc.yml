@@ -20,11 +20,21 @@ jobs:
         os_version_id: [edge]
         arch:
           [
-            arm-linux-musleabihf,
-            armv7l-linux-musleabihf,
             aarch64-linux-musl,
+            arm-linux-musleabi,
+            arm-linux-musleabihf,
+            armv6-linux-musleabihf,
+            armv7l-linux-musleabihf,
+            i686-linux-musl,
             x86_64-linux-musl,
-            x86_64-linux-muslx32,
+            mips-linux-muslsf,
+            mips64-linux-musl,
+            mips64el-linux-musl,
+            mipsel-linux-muslsf,
+            powerpc-linux-muslsf,
+            powerpc64le-linux-musl,
+            s390x-linux-musl,
+            riscv64-linux-musl,
           ]
         include:
           - arch: arm-linux-musleabihf
