@@ -37,20 +37,36 @@ jobs:
             riscv64-linux-musl,
           ]
         include:
-          - arch: arm-linux-musleabihf
-            binary_name: armhf
-            
-          - arch: armv7l-linux-musleabihf
-            binary_name: armv7
-            
           - arch: aarch64-linux-musl
             binary_name: aarch64
-            
+          - arch: arm-linux-musleabi
+            binary_name: armv5
+          - arch: arm-linux-musleabihf
+            binary_name: armhf
+          - arch: armv6-linux-musleabihf
+            binary_name: armv6
+          - arch: armv7l-linux-musleabihf
+            binary_name: armv7
+          - arch: i686-linux-musl
+            binary_name: x86
           - arch: x86_64-linux-musl
             binary_name: x86_64
-
-          - arch: x86_64-linux-muslx32
-            binary_name: x86
+          - arch: mips-linux-muslsf
+            binary_name: mips
+          - arch: mips64-linux-musl
+            binary_name: mips64
+          - arch: mips64el-linux-musl
+            binary_name: mips64el
+          - arch: mipsel-linux-muslsf
+            binary_name: mipsel
+          - arch: powerpc-linux-muslsf
+            binary_name: powerpc
+          - arch: powerpc64le-linux-musl
+            binary_name: powerpc64le
+          - arch: s390x-linux-musl
+            binary_name: s390x
+          - arch: riscv64-linux-musl
+            binary_name: riscv64
 
     name: ${{ matrix.arch }}
 
@@ -59,8 +75,8 @@ jobs:
 
       - name: Bootstrap musl cross make toolchains
         run: |
-          curl -sLO https://github.com/userdocs/qbt-musl-cross-make/releases/latest/download/${{ matrix.arch }}.tar.gz
-          tar xf ${{ matrix.arch }}.tar.gz --strip-components=1 -C "$(pwd)"
+          curl -sLO https://github.com/userdocs/qbt-musl-cross-make/releases/latest/download/${{ matrix.arch }}.tar.xz
+          tar xf ${{ matrix.arch }}.tar.xz --strip-components=1 -C "$(pwd)"
           echo "release_asset=${{ matrix.arch }}" >> $GITHUB_ENV
 
           echo "PATH=/root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" > env.custom
