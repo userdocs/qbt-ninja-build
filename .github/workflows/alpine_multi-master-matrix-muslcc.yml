@@ -2,6 +2,17 @@ name: musl.cc ninja - latest master matrix
 
 on:
   workflow_dispatch:
+    inputs:
+      skip_rerun:
+        description: "Skip rerun?"
+        required: true
+        type: boolean
+      retries:
+        description: 'Number of rerun retries'
+        required: true
+        default: '5'
+        type: choice
+        options: [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -27,11 +38,11 @@ jobs:
             armv7l-linux-musleabihf,
             i686-linux-musl,
             x86_64-linux-musl,
-            mips-linux-muslsf,
+            mips-linux-musl,
             mips64-linux-musl,
             mips64el-linux-musl,
-            mipsel-linux-muslsf,
-            powerpc-linux-muslsf,
+            mipsel-linux-musl,
+            powerpc-linux-musl,
             powerpc64le-linux-musl,
             s390x-linux-musl,
             riscv64-linux-musl,
@@ -51,15 +62,15 @@ jobs:
             binary_name: x86
           - arch: x86_64-linux-musl
             binary_name: x86_64
-          - arch: mips-linux-muslsf
+          - arch: mips-linux-musl
             binary_name: mips
           - arch: mips64-linux-musl
             binary_name: mips64
           - arch: mips64el-linux-musl
             binary_name: mips64el
-          - arch: mipsel-linux-muslsf
+          - arch: mipsel-linux-musl
             binary_name: mipsel
-          - arch: powerpc-linux-muslsf
+          - arch: powerpc-linux-musl
             binary_name: powerpc
           - arch: powerpc64le-linux-musl
             binary_name: powerpc64le
@@ -133,3 +144,17 @@ jobs:
           name: ${{ matrix.name }} ${{ env.ninja_github_tag }}
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  rerun-on-failure:
+    if: failure() && inputs.skip_rerun == '0'
+    name: rerun-on-failure
+    needs: release
+    permissions:
+      actions: write
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Trigger rerun workflow on job failures
+        run: gh workflow run rerun.yml -f run_id=${{ github.run_id }} -f attempts=${{ github.run_attempt }} -f retries=${{ inputs.retries }}
