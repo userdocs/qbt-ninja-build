@@ -1,4 +1,4 @@
-name: musl.cc ninja - latest master matrix
+name: ninja build - master
 
 on:
   workflow_dispatch:
@@ -18,11 +18,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions: write-all
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -46,6 +46,7 @@ jobs:
             powerpc64le-linux-musl,
             s390x-linux-musl,
             riscv64-linux-musl,
+            loongarch64-linux-musl,
           ]
         include:
           - arch: aarch64-linux-musl
@@ -78,6 +79,8 @@ jobs:
             binary_name: s390x
           - arch: riscv64-linux-musl
             binary_name: riscv64
+          - arch: loongarch64-linux-musl
+            binary_name: loongarch64
 
     name: ${{ matrix.arch }}
 
@@ -143,7 +146,7 @@ jobs:
           tag: v${{ env.ninja_github_tag }}
           name: ${{ matrix.name }} ${{ env.ninja_github_tag }}
           allowUpdates: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ github.token }}
 
   rerun-on-failure:
     if: failure() && inputs.skip_rerun == '0'
@@ -153,7 +156,7 @@ jobs:
       actions: write
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      GH_TOKEN: "${{ github.token }}"
     steps:
       - uses: actions/checkout@v4
       - name: Trigger rerun workflow on job failures
