@@ -1,4 +1,4 @@
-name: ninja build - master
+name: mcm ninja build - docker
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ on:
         options: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: mcm-ninja-build
   cancel-in-progress: true
 
 jobs:
