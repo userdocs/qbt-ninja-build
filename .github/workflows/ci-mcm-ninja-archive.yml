@@ -66,7 +66,7 @@ jobs:
         run: docker exec multiarch apk upgrade --repository="${{ env.CDN }}"
 
       - name: Run apk to install the core build dependencies
-        run: docker exec multiarch apk add build-base git curl linux-headers cmake re2c
+        run: docker exec multiarch apk add build-base git curl linux-headers cmake re2c python3 gtest
 
       - name: Create tag env
         run: echo "ninja_github_tag=$(curl -sL "https://raw.githubusercontent.com/ninja-build/ninja/master/src/version.cc" | sed -rn 's|const char\* kNinjaVersion = "(.*)";|\1|p' | sed 's/\.git//g')" >> $GITHUB_ENV
@@ -78,7 +78,7 @@ jobs:
         run: >
           docker exec -w /root/${{ matrix.name }} multiarch cmake -B build
           -D CMAKE_BUILD_TYPE="release"
-          -D CMAKE_CXX_STANDARD="17"
+          -D CMAKE_CXX_STANDARD="20"
           -D CMAKE_INSTALL_PREFIX="/root"
           -D BUILD_TESTING=off
 
