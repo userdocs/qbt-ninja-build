@@ -22,6 +22,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04 # needs to be ubuntu-24.04 for qemu-user-static loongarch64 support
+    name: ${{ matrix.arch }}
     permissions:
       contents: write
       id-token: write
@@ -35,10 +36,40 @@ jobs:
         include:
           - arch: aarch64-linux-musl
             binary_name: aarch64
-    name: ${{ matrix.arch }}
+          - arch: arm-linux-musleabi
+            binary_name: armv5
+          - arch: arm-linux-musleabihf
+            binary_name: armhf
+          - arch: armv6-linux-musleabihf
+            binary_name: armv6
+          - arch: armv7l-linux-musleabihf
+            binary_name: armv7
+          - arch: i686-linux-musl
+            binary_name: x86
+          - arch: x86_64-linux-musl
+            binary_name: x86_64
+          - arch: mips-linux-musl
+            binary_name: mips
+          - arch: mips64-linux-musl
+            binary_name: mips64
+          - arch: mips64el-linux-musl
+            binary_name: mips64el
+          - arch: mipsel-linux-musl
+            binary_name: mipsel
+          - arch: powerpc-linux-musl
+            binary_name: powerpc
+          - arch: powerpc64le-linux-musl
+            binary_name: powerpc64le
+          - arch: s390x-linux-musl
+            binary_name: s390x
+          - arch: riscv64-linux-musl
+            binary_name: riscv64
+          - arch: loongarch64-linux-musl
+            binary_name: loongarch64
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Host - checkout
+        uses: actions/checkout@v4
 
       - name: Bootstrap musl cross make toolchains
         run: |
