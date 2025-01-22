@@ -155,7 +155,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: ci-auto-rerun-failed-jobs via ${{ env.github_repo || github.repository }}
         run: >
-          gh workflow run ci-auto-rerun-failed-jobs.yml
+          gh workflow run ci-auto-rerun-failed-jobs-action.yml
           --repo "${{ env.github_repo || github.repository }}"
           -f github_repo=${{ github.repository }}
           -f run_id=${{ github.run_id }}
