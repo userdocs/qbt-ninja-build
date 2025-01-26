@@ -1,4 +1,4 @@
-name: mcm ninja build
+name: ci- mcm ninja build
 
 on:
   workflow_dispatch:
@@ -95,14 +95,14 @@ jobs:
 
       - name: Configure ninja
         run: >
-          docker exec -w /home/gh/ninja ${container_name} cmake -B build
+          docker exec -u gh:gh -w /home/gh/ninja ${container_name} cmake -B build
           -D CMAKE_BUILD_TYPE="Release"
           -D CMAKE_CXX_STANDARD="20"
           -D CMAKE_INSTALL_PREFIX="/home/gh"
           -D BUILD_TESTING=off
 
       - name: Cmake Build ninja
-        run: docker exec -w /home/gh/ninja ${container_name} cmake --build build --parallel --config Release
+        run: docker exec -u gh:gh -w /home/gh/ninja ${container_name} cmake --build build --parallel --config Release
 
       - name: Host - Rename ninja to ninja-${{ matrix.binary_name }}
         run: mv -f ${{ github.workspace }}/ninja/build/ninja ninja-${{ matrix.binary_name }}
