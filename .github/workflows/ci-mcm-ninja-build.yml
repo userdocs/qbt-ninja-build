@@ -101,7 +101,11 @@ jobs:
       - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
         run: |
           env > env.custom
+          printf 'LDFLAGS="-s -static --static"' >> env.custom
           docker run --name ${container_name} -it -d --env-file env.custom -w /home/github -v ${{ github.workspace }}:/home/github ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
+
+      - name: env test
+        run: docker exec ${container_name} sh -c 'env'
 
       - name: Create tag env
         run: echo "ninja_github_tag=$(curl -sL "https://raw.githubusercontent.com/ninja-build/ninja/master/src/version.cc" | sed -rn 's|const char\* kNinjaVersion = "(.*)";|\1|p' | sed 's/\.git//g')" >> $GITHUB_ENV
