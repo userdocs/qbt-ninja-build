@@ -75,31 +75,43 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
-        run: docker run --name ${container_name} -it -d -e "LDFLAGS=-s -static --static" -w /home/github -v ${{ github.workspace }}:/home/github ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
+      # - name: Host - set up qemu-user-static binfmt-support
+      #   run: sudo apt-get install libpipeline1 qemu-user-static binfmt-support
 
-      - name: Create tag env
-        run: echo "ninja_github_tag=$(curl -sL "https://raw.githubusercontent.com/ninja-build/ninja/master/src/version.cc" | sed -rn 's|const char\* kNinjaVersion = "(.*)";|\1|p' | sed 's/\.git//g')" >> $GITHUB_ENV
+      - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
+        run: >
+          docker run --name ${container_name} -it -d
+          -e "LDFLAGS=-s -static --static"
+          -w /home/gh
+          -v ${{ github.workspace }}:/home/gh
+          ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
 
       - name: Host - Git clone ninja
         run: git clone --no-tags --single-branch --branch master --depth=1 "https://github.com/ninja-build/ninja.git" "ninja"
 
+      - name: Create tag env
+        working-directory: ninja
+        run: printf '%s\n' "ninja_github_tag=$(cat src/version.cc | sed -rn 's|const char\* kNinjaVersion = "(.*)";|\1|p' | sed 's/\.git//g')" >> $GITHUB_ENV
+
       - name: Configure ninja
         run: >
-          docker exec -w /home/github/ninja ${container_name} cmake -B build
-          -D CMAKE_BUILD_TYPE="release"
+          docker exec -w /home/gh/ninja ${container_name} cmake -B build
+          -D CMAKE_BUILD_TYPE="Release"
           -D CMAKE_CXX_STANDARD="20"
-          -D CMAKE_INSTALL_PREFIX="/home/github"
+          -D CMAKE_INSTALL_PREFIX="/home/gh"
           -D BUILD_TESTING=off
 
       - name: Cmake Build ninja
-        run: docker exec -w /home/github/ninja ${container_name} cmake --build build --parallel --config Release
+        run: docker exec -w /home/gh/ninja ${container_name} cmake --build build --parallel --config Release
 
-      - name: Cmake Install ninja
-        run: docker exec -w /home/github/ninja ${container_name} cmake --install build
+      - name: Host - Rename ninja to ninja-${{ matrix.binary_name }}
+        run: mv -f ${{ github.workspace }}/ninja/build/ninja ninja-${{ matrix.binary_name }}
 
-      - name: Rename ninja to ${{ env.release_asset }}
-        run: docker exec ${container_name} mv -f /home/github/bin/ninja /home/github/ninja-${{ matrix.binary_name }}
+      - name: Host - ninja-${{ matrix.binary_name }} --version
+        run: ./ninja-${{ matrix.binary_name }} --version >> $GITHUB_STEP_SUMMARY
+
+      - name: Host - crossbuild binary info via file
+        run: file ./ninja-${{ matrix.binary_name }} >> $GITHUB_STEP_SUMMARY
 
       - name: Host - signed build provenance attestations
         uses: actions/attest-build-provenance@v2
