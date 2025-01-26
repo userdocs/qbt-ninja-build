@@ -1,4 +1,4 @@
-name: ci- mcm ninja build
+name: ci - mcm ninja build
 
 on:
   workflow_dispatch:
@@ -75,8 +75,8 @@ jobs:
         with:
           persist-credentials: false
 
-      # - name: Host - set up qemu-user-static binfmt-support
-      #   run: sudo apt-get install libpipeline1 qemu-user-static binfmt-support
+      - name: Host - set up qemu-user-static binfmt-support
+        run: sudo apt-get install libpipeline1 qemu-user-static binfmt-support
 
       - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
         run: >
