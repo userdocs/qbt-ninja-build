@@ -101,7 +101,7 @@ jobs:
       - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
         run: |
           env > env.custom
-          printf '%s\n' 'LDFLAGS="-s -static --static"' >> env.custom
+          printf '%s\n' 'LDFLAGS=-s -static --static' >> env.custom
           docker run --name ${container_name} -it -d --env-file env.custom -w /home/github -v ${{ github.workspace }}:/home/github ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
 
       - name: env test
