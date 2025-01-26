@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04 # needs to be ubuntu-24.04 for qemu-user-static loongarch64 support
+    runs-on: ubuntu-24.04-arm # needs to be ubuntu-24.04 for qemu-user-static loongarch64 support
     name: ${{ matrix.arch }}
     permissions:
       contents: write
@@ -78,8 +78,8 @@ jobs:
 
       - name: Bootstrap musl cross make toolchains
         run: |
-          curl -sLO https://github.com/userdocs/qbt-musl-cross-make/releases/latest/download/${{ matrix.arch }}.tar.xz
-          tar xf ${{ matrix.arch }}.tar.xz --strip-components=1 -C "$(pwd)"
+          curl -sLO https://github.com/userdocs/qbt-musl-cross-make/releases/latest/download/aarch64-${{ matrix.arch }}.tar.xz
+          tar xf aarch64-${{ matrix.arch }}.tar.xz --strip-components=1 -C "$(pwd)"
           echo "release_asset=${{ matrix.arch }}" >> $GITHUB_ENV
 
           echo "PATH=/root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" > env.custom
@@ -157,7 +157,7 @@ jobs:
       cancel-in-progress: true
     permissions:
       actions: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     env:
       GH_TOKEN: "${{ secrets.AUTO_RERUN || github.token }}"
       github_repo: "" # To use ci-auto-rerun-failed-jobs.yml hosted in a remote repository else default to the current repository. Requires PAT token AUTO_RERUN
