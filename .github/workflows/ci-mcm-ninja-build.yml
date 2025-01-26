@@ -33,28 +33,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ninja]
-        os_id: [alpine]
-        os_version_id: [edge]
-        arch_type:
-          [
-            "aarch64-linux-musl",
-            "arm-linux-musleabi",
-            "arm-linux-musleabihf",
-            "armv6-linux-musleabihf",
-            "armv7l-linux-musleabihf",
-            "i686-linux-musl",
-            "x86_64-linux-musl",
-            "mips-linux-musl",
-            "mipsel-linux-musl",
-            "mips64-linux-musl",
-            "mips64el-linux-musl",
-            "powerpc-linux-musl",
-            "powerpc64le-linux-musl",
-            "s390x-linux-musl",
-            "riscv64-linux-musl",
-            "loongarch64-linux-musl",
-          ]
         include:
           - arch_type: "aarch64-linux-musl"
             binary_name: aarch64
@@ -103,25 +81,25 @@ jobs:
       - name: Create tag env
         run: echo "ninja_github_tag=$(curl -sL "https://raw.githubusercontent.com/ninja-build/ninja/master/src/version.cc" | sed -rn 's|const char\* kNinjaVersion = "(.*)";|\1|p' | sed 's/\.git//g')" >> $GITHUB_ENV
 
-      - name: Host - Git clone ${{ matrix.name }}
-        run: git clone --no-tags --single-branch --branch master --depth=1 "https://github.com/ninja-build/ninja.git" "${{ matrix.name }}"
+      - name: Host - Git clone ninja
+        run: git clone --no-tags --single-branch --branch master --depth=1 "https://github.com/ninja-build/ninja.git" "ninja"
 
-      - name: Configure ${{ matrix.name }}
+      - name: Configure ninja
         run: >
-          docker exec -w /home/github/${{ matrix.name }} ${container_name} cmake -B build
+          docker exec -w /home/github/ninja ${container_name} cmake -B build
           -D CMAKE_BUILD_TYPE="release"
           -D CMAKE_CXX_STANDARD="20"
           -D CMAKE_INSTALL_PREFIX="/home/github"
           -D BUILD_TESTING=off
 
-      - name: Cmake Build ${{ matrix.name }}
-        run: docker exec -w /home/github/${{ matrix.name }} ${container_name} cmake --build build --parallel --config Release
+      - name: Cmake Build ninja
+        run: docker exec -w /home/github/ninja ${container_name} cmake --build build --parallel --config Release
 
-      - name: Cmake Install ${{ matrix.name }}
-        run: docker exec -w /home/github/${{ matrix.name }} ${container_name} cmake --install build
+      - name: Cmake Install ninja
+        run: docker exec -w /home/github/ninja ${container_name} cmake --install build
 
-      - name: Rename ${{ matrix.name }} to ${{ env.release_asset }}
-        run: docker exec ${container_name} mv -f /home/github/bin/${{ matrix.name }} /home/github/ninja-${{ matrix.binary_name }}
+      - name: Rename ninja to ${{ env.release_asset }}
+        run: docker exec ${container_name} mv -f /home/github/bin/ninja /home/github/ninja-${{ matrix.binary_name }}
 
       - name: Host - signed build provenance attestations
         uses: actions/attest-build-provenance@v2
@@ -141,7 +119,7 @@ jobs:
           artifacts: ninja-${{ matrix.binary_name }}
           replacesArtifacts: true
           tag: v${{ env.ninja_github_tag }}
-          name: ${{ matrix.name }} ${{ env.ninja_github_tag }}
+          name: ninja ${{ env.ninja_github_tag }}
           allowUpdates: true
           token: ${{ github.token }}
 
