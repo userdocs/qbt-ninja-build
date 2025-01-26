@@ -89,16 +89,19 @@ jobs:
           - arch_type: "loongarch64-linux-musl"
             binary_name: loongarch64
 
+    env:
+      container_name: crossbuild
+
     steps:
       - name: Host - checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - name: Create docker multiarch ${{ matrix.docker_arch }} container
+      - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
         run: |
           env > env.custom
-          docker run --name multiarch -it -d --env-file env.custom -w /home/gh -v ${{ github.workspace }}:/home/gh ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
+          docker run --name ${container_name} -it -d --env-file env.custom -w /home/gh -v ${{ github.workspace }}:/home/gh ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
           # Create the user gh with the id 1001:1001 which is the same as the runner user id and group id.
           docker exec ${container_name} sh -c 'adduser -h /home/gh -Ds /bin/bash -u 1001 gh && apk add sudo'
           # Allow the user gh to run sudo without password prompt: docker exec -u gh:gh ${container_name} sudo ls
@@ -112,20 +115,20 @@ jobs:
 
       - name: Configure ${{ matrix.name }}
         run: >
-          docker exec -u gh:gh -w /home/gh/${{ matrix.name }} multiarch cmake -B build
+          docker exec -u gh:gh -w /home/gh/${{ matrix.name }} ${container_name} cmake -B build
           -D CMAKE_BUILD_TYPE="release"
           -D CMAKE_CXX_STANDARD="20"
           -D CMAKE_INSTALL_PREFIX="/home/gh"
           -D BUILD_TESTING=off
 
       - name: Cmake Build ${{ matrix.name }}
-        run: docker exec -u gh:gh -w /home/gh/${{ matrix.name }} multiarch cmake --build build --parallel --config Release
+        run: docker exec -u gh:gh -w /home/gh/${{ matrix.name }} ${container_name} cmake --build build --parallel --config Release
 
       - name: Cmake Install ${{ matrix.name }}
-        run: docker exec -u gh:gh -w /home/gh/${{ matrix.name }} multiarch cmake --install build
+        run: docker exec -u gh:gh -w /home/gh/${{ matrix.name }} ${container_name} cmake --install build
 
       - name: Rename ${{ matrix.name }} to ${{ env.release_asset }}
-        run: docker exec -u gh:gh multiarch mv -f /home/gh/bin/${{ matrix.name }} /home/gh/ninja-${{ matrix.binary_name }}
+        run: docker exec -u gh:gh ${container_name} mv -f /home/gh/bin/${{ matrix.name }} /home/gh/ninja-${{ matrix.binary_name }}
 
       - name: Host - signed build provenance attestations
         uses: actions/attest-build-provenance@v2
