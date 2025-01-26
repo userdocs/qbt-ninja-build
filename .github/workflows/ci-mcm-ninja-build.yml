@@ -25,7 +25,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04-arm # needs to be ubuntu-24.04 for qemu-user-static loongarch64 support
-    name: ${{ matrix.arch }}
+    name: ${{ matrix.arch_type }}
     permissions:
       contents: write
       id-token: write
@@ -56,37 +56,37 @@ jobs:
             "loongarch64-linux-musl",
           ]
         include:
-          - arch: "aarch64-linux-musl"
+          - arch_type: "aarch64-linux-musl"
             binary_name: aarch64
-          - arch: "arm-linux-musleabi"
+          - arch_type: "arm-linux-musleabi"
             binary_name: armv5
-          - arch: "arm-linux-musleabihf"
+          - arch_type: "arm-linux-musleabihf"
             binary_name: armhf
-          - arch: "armv6-linux-musleabihf"
+          - arch_type: "armv6-linux-musleabihf"
             binary_name: armv6
-          - arch: "armv7l-linux-musleabihf"
+          - arch_type: "armv7l-linux-musleabihf"
             binary_name: armv7
-          - arch: "i686-linux-musl"
+          - arch_type: "i686-linux-musl"
             binary_name: x86
-          - arch: "x86_64-linux-musl"
+          - arch_type: "x86_64-linux-musl"
             binary_name: x86_64
-          - arch: "mips-linux-musl"
+          - arch_type: "mips-linux-musl"
             binary_name: mips
-          - arch: "mips64-linux-musl"
+          - arch_type: "mips64-linux-musl"
             binary_name: mips64
-          - arch: "mips64el-linux-musl"
+          - arch_type: "mips64el-linux-musl"
             binary_name: mips64el
-          - arch: "mipsel-linux-musl"
+          - arch_type: "mipsel-linux-musl"
             binary_name: mipsel
-          - arch: "powerpc-linux-musl"
+          - arch_type: "powerpc-linux-musl"
             binary_name: powerpc
-          - arch: "powerpc64le-linux-musl"
+          - arch_type: "powerpc64le-linux-musl"
             binary_name: powerpc64le
-          - arch: "s390x-linux-musl"
+          - arch_type: "s390x-linux-musl"
             binary_name: s390x
-          - arch: "riscv64-linux-musl"
+          - arch_type: "riscv64-linux-musl"
             binary_name: riscv64
-          - arch: "loongarch64-linux-musl"
+          - arch_type: "loongarch64-linux-musl"
             binary_name: loongarch64
 
     steps:
@@ -98,7 +98,7 @@ jobs:
       - name: Create docker multiarch ${{ matrix.docker_arch }} container
         run: |
           env > env.custom
-          docker run --name multiarch -it -d --env-file env.custom -w /home/gh -v ${{ github.workspace }}:/home/gh ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch }}
+          docker run --name multiarch -it -d --env-file env.custom -w /home/gh -v ${{ github.workspace }}:/home/gh ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
           # Create the user gh with the id 1001:1001 which is the same as the runner user id and group id.
           docker exec ${container_name} sh -c 'adduser -h /home/gh -Ds /bin/bash -u 1001 gh && apk add sudo'
           # Allow the user gh to run sudo without password prompt: docker exec -u gh:gh ${container_name} sudo ls
