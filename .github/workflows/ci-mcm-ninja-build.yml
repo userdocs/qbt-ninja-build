@@ -36,6 +36,25 @@ jobs:
         name: [ninja]
         os_id: [alpine]
         os_version_id: [edge]
+        arch_type:
+          [
+            "aarch64-linux-musl",
+            "arm-linux-musleabi",
+            "arm-linux-musleabihf",
+            "armv6-linux-musleabihf",
+            "armv7l-linux-musleabihf",
+            "i686-linux-musl",
+            "x86_64-linux-musl",
+            "mips-linux-musl",
+            "mipsel-linux-musl",
+            "mips64-linux-musl",
+            "mips64el-linux-musl",
+            "powerpc-linux-musl",
+            "powerpc64le-linux-musl",
+            "s390x-linux-musl",
+            "riscv64-linux-musl",
+            "loongarch64-linux-musl",
+          ]
         include:
           - arch: "aarch64-linux-musl"
             binary_name: aarch64
@@ -78,6 +97,7 @@ jobs:
 
       - name: Create docker multiarch ${{ matrix.docker_arch }} container
         run: |
+          env > env.custom
           docker run --name multiarch -it -d --env-file env.custom -w /home/gh -v ${{ github.workspace }}:/home/gh ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch }}
           # Create the user gh with the id 1001:1001 which is the same as the runner user id and group id.
           docker exec ${container_name} sh -c 'adduser -h /home/gh -Ds /bin/bash -u 1001 gh && apk add sudo'
