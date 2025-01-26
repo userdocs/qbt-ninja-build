@@ -88,7 +88,6 @@ jobs:
             binary_name: riscv64
           - arch_type: "loongarch64-linux-musl"
             binary_name: loongarch64
-
     env:
       container_name: crossbuild
 
@@ -99,13 +98,7 @@ jobs:
           persist-credentials: false
 
       - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
-        run: |
-          env > env.custom
-          printf '%s\n' 'LDFLAGS=-s -static --static' >> env.custom
-          docker run --name ${container_name} -it -d --env-file env.custom -w /home/github -v ${{ github.workspace }}:/home/github ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
-
-      - name: env test
-        run: docker exec ${container_name} sh -c 'env'
+        run: docker run --name ${container_name} -it -d -e "LDFLAGS=-s -static --static" --env-file env.custom -w /home/github -v ${{ github.workspace }}:/home/github ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
 
       - name: Create tag env
         run: echo "ninja_github_tag=$(curl -sL "https://raw.githubusercontent.com/ninja-build/ninja/master/src/version.cc" | sed -rn 's|const char\* kNinjaVersion = "(.*)";|\1|p' | sed 's/\.git//g')" >> $GITHUB_ENV
