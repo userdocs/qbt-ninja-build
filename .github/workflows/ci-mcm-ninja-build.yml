@@ -76,7 +76,10 @@ jobs:
           persist-credentials: false
 
       - name: Host - set up qemu-user-static binfmt-support
-        run: sudo apt-get install libpipeline1 qemu-user-static binfmt-support
+        run: |
+          # Ensure apt cache is up to date or it may fail to install packages for version mismatch
+          sudo apt-get update
+          sudo apt-get install libpipeline1 qemu-user-static binfmt-support
 
       - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
         run: >
