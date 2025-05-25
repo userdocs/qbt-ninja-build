@@ -81,6 +81,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install libpipeline1 qemu-user-static binfmt-support
 
+      - name: Docker - Bootstrap the boost files
+        uses: userdocs/actions/qemu@main
+  
       - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
         run: >
           docker run --name ${container_name} -it -d
