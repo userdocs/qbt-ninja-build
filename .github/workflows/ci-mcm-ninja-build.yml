@@ -120,7 +120,7 @@ jobs:
         run: file ./ninja-${{ matrix.binary_name }} >> $GITHUB_STEP_SUMMARY
 
       - name: Host - signed build provenance attestations
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
           subject-path: ninja-${{ matrix.binary_name }}
 
