@@ -68,6 +68,8 @@ jobs:
             binary_name: loongarch64
     env:
       container_name: crossbuild
+      CPPFLAGS: "-I/home/gh/local/include -I/usr/include/fortify -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3"
+      LDFLAGS: "-static --static -L/home/gh/local/lib -Wl,-O1,--as-needed,--sort-common,-z,nodlopen,-z,noexecstack,-z,now,-z,relro,-z,--no-copy-dt-needed-entries,--build-id"
 
     steps:
       - name: Host - checkout
@@ -75,22 +77,20 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Host - set up qemu-user-static binfmt-support
-        run: |
-          # Ensure apt cache is up to date or it may fail to install packages for version mismatch
-          sudo apt-get update
-          sudo apt-get install libpipeline1 qemu-user-static binfmt-support
-
       - name: Host - Bootstrap qemu
-        uses: userdocs/actions/qemu@main
-  
-      - name: Create docker ${{ env.container_name }} ${{ matrix.docker_arch }} container
-        run: >
-          docker run --name ${container_name} -it -d
-          -e "LDFLAGS=-s -static --static"
-          -w /home/gh
-          -v ${{ github.workspace }}:/home/gh
-          ghcr.io/userdocs/qbt-musl-cross-make:${{ matrix.arch_type }}
+        uses: userdocs/actions/qemu@e74d179578ddcf1cd07cd9eefd0915f33a3bd600 # v1.0.1
+
+      - uses: userdocs/actions/qbt_docker@e74d179578ddcf1cd07cd9eefd0915f33a3bd600 # v1.0.1
+        with:
+            # if the env.custom file exists, it will be used to pass environment
+            distinct_id: ""
+            use_host_env: "false"
+            container_name: ${{ env.container_name }}
+            os_id: ghcr.io/userdocs/qbt-musl-cross-make
+            os_version_id: ${{ matrix.arch_type }}
+            custom_docker_commands: "-e CPPFLAGS='${{ env.CPPFLAGS }}' -e LDFLAGS='${{ env.LDFLAGS }}'"
+            additional_alpine_apps: "bash curl git"
+            additional_debian_apps: "bash curl git"
 
       - name: Host - Git clone ninja
         run: git clone --no-tags --single-branch --branch master --depth=1 "https://github.com/ninja-build/ninja.git" "ninja"
