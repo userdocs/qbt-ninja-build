@@ -76,7 +76,7 @@ jobs:
       - name: Host - Bootstrap qemu
         uses: userdocs/actions/qemu@749d0010d8abde6c8a8ffc720856de5e799bdfea # v1.0.2
         with:
-          target_arch: ${{ matrix.binary_name }}
+          target_arch: ${{ matrix.arch_type }}
 
       - name: Host - Bootstrap docker container
         uses: userdocs/actions/qbt_docker@749d0010d8abde6c8a8ffc720856de5e799bdfea # v1.0.2
