@@ -76,13 +76,16 @@ jobs:
       - name: Host - Bootstrap qemu
         uses: userdocs/actions/qemu@749d0010d8abde6c8a8ffc720856de5e799bdfea # v1.0.2
         with:
-          target_arch: ${{ matrix.arch_type }}
+          target_arch: ${{ matrix.binary_name }}
 
       - name: Host - Bootstrap docker container
         uses: userdocs/actions/qbt_docker@749d0010d8abde6c8a8ffc720856de5e799bdfea # v1.0.2
         with:
             os_id: ghcr.io/userdocs/qbt-musl-cross-make
             os_version_id: ${{ matrix.arch_type }}
+            custom_docker_commands: |
+              -e LDFLAGS=-static --static -L${wd}/local/lib -Wl,-O1,--as-needed,--sort-common,-z,nodlopen,-z,noexecstack,-z,now,-z,relro,-z,--no-copy-dt-needed-entries,--build-id
+              -e CPPFLAGS=-I${wd}/local/include -I/usr/include/fortify -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3
 
       - name: Host - Git clone ninja
         run: git clone --no-tags --single-branch --branch master --depth=1 "https://github.com/ninja-build/ninja.git" "ninja"
@@ -92,9 +95,6 @@ jobs:
         run: printf '%s\n' "ninja_github_tag=$(cat src/version.cc | sed -rn 's|const char\* kNinjaVersion = "(.*)";|\1|p' | sed 's/\.git//g')" >> $GITHUB_ENV
 
       - name: Configure ninja
-        env:
-          CPPFLAGS: "-I${{ env.wd }}/local/include -I/usr/include/fortify -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3"
-          LDFLAGS: "-static --static -L${{ env.wd }}/local/lib -Wl,-O1,--as-needed,--sort-common,-z,nodlopen,-z,noexecstack,-z,now,-z,relro,-z,--no-copy-dt-needed-entries,--build-id"
         run: >
           docker exec -w "${wd}/ninja" "${container_name}" cmake -B build
           -D CMAKE_BUILD_TYPE="Release"
