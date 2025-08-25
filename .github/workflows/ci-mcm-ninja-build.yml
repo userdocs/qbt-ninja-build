@@ -6,7 +6,7 @@ on:
       skip_rerun:
         description: "Skip rerun?"
         required: true
-        default: false
+        default: true
         type: boolean
       retries:
         description: "Number of rerun retries"
@@ -66,10 +66,6 @@ jobs:
             binary_name: riscv64
           - arch_type: "loongarch64-linux-musl"
             binary_name: loongarch64
-    env:
-      container_name: crossbuild
-      CPPFLAGS: "-I/home/gh/local/include -I/usr/include/fortify -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3"
-      LDFLAGS: "-static --static -L/home/gh/local/lib -Wl,-O1,--as-needed,--sort-common,-z,nodlopen,-z,noexecstack,-z,now,-z,relro,-z,--no-copy-dt-needed-entries,--build-id"
 
     steps:
       - name: Host - checkout
@@ -78,19 +74,15 @@ jobs:
           persist-credentials: false
 
       - name: Host - Bootstrap qemu
-        uses: userdocs/actions/qemu@e74d179578ddcf1cd07cd9eefd0915f33a3bd600 # v1.0.1
-
-      - uses: userdocs/actions/qbt_docker@e74d179578ddcf1cd07cd9eefd0915f33a3bd600 # v1.0.1
+        uses: userdocs/actions/qemu@749d0010d8abde6c8a8ffc720856de5e799bdfea # v1.0.2
         with:
-            # if the env.custom file exists, it will be used to pass environment
-            distinct_id: ""
-            use_host_env: "false"
-            container_name: ${{ env.container_name }}
+          target_arch: ${{ matrix.arch_type }}
+
+      - name: Host - Bootstrap docker container
+        uses: userdocs/actions/qbt_docker@749d0010d8abde6c8a8ffc720856de5e799bdfea # v1.0.2
+        with:
             os_id: ghcr.io/userdocs/qbt-musl-cross-make
             os_version_id: ${{ matrix.arch_type }}
-            custom_docker_commands: "-e CPPFLAGS='${{ env.CPPFLAGS }}' -e LDFLAGS='${{ env.LDFLAGS }}'"
-            additional_alpine_apps: "bash curl git"
-            additional_debian_apps: "bash curl git"
 
       - name: Host - Git clone ninja
         run: git clone --no-tags --single-branch --branch master --depth=1 "https://github.com/ninja-build/ninja.git" "ninja"
@@ -100,15 +92,19 @@ jobs:
         run: printf '%s\n' "ninja_github_tag=$(cat src/version.cc | sed -rn 's|const char\* kNinjaVersion = "(.*)";|\1|p' | sed 's/\.git//g')" >> $GITHUB_ENV
 
       - name: Configure ninja
+        env:
+          CPPFLAGS: "-I${{ env.wd }}/local/include -I/usr/include/fortify -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3"
+          LDFLAGS: "-static --static -L${{ env.wd }}/local/lib -Wl,-O1,--as-needed,--sort-common,-z,nodlopen,-z,noexecstack,-z,now,-z,relro,-z,--no-copy-dt-needed-entries,--build-id"
         run: >
-          docker exec -u gh:gh -w /home/gh/ninja ${container_name} cmake -B build
+          docker exec -w "${wd}/ninja" "${container_name}" cmake -B build
           -D CMAKE_BUILD_TYPE="Release"
           -D CMAKE_CXX_STANDARD="20"
-          -D CMAKE_INSTALL_PREFIX="/home/gh"
           -D BUILD_TESTING=off
+          -D BUILD_GMOCK=off
+          -D INSTALL_GTEST=off
 
       - name: Cmake Build ninja
-        run: docker exec -u gh:gh -w /home/gh/ninja ${container_name} cmake --build build --parallel --config Release
+        run: docker exec -w "${wd}/ninja" "${container_name}" cmake --build build --parallel --config Release
 
       - name: Host - Rename ninja to ninja-${{ matrix.binary_name }}
         run: mv -f ${{ github.workspace }}/ninja/build/ninja ninja-${{ matrix.binary_name }}
